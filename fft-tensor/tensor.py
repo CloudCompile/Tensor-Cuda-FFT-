@@ -141,7 +141,7 @@ class SparseSpectralTensor:
         self.indices = torch.nonzero(mask, as_tuple=False)
         self.freq_coeffs = freq[mask]
     
-    def _flat_to_nd_indices(self, flat_indices: torch.Tensor, shape: Tuple[int, ...]) -> torch::Tensor:
+    def _flat_to_nd_indices(self, flat_indices: torch.Tensor, shape: Tuple[int, ...]) -> torch.Tensor:
         """Convert flat indices to ND indices."""
         nd_indices = []
         remaining = flat_indices
