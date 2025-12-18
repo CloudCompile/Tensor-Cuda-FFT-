@@ -30,45 +30,46 @@ class FrequencyMatMul:
     @staticmethod
     def circulant_matmul(x: torch.Tensor, w_freq: torch.Tensor) -> torch.Tensor:
         """
-        Matrix multiply via circulant embedding in frequency domain.
+        DEPRECATED: Circulant matrix multiplication via FFT.
         
-        Theory: Any matrix can be embedded in a circulant matrix,
-        and circulant matrix multiply = convolution = FFT multiply.
+        TRUTH: This is NOT a general matmul replacement. Circulant embedding
+        for arbitrary matrices requires specific structure (Toeplitz, etc).
+        
+        Current implementation: Falls back to standard matmul for correctness.
+        
+        For true O(n log n) matmul via FFT, you need:
+        1. Matrix must have circulant/Toeplitz structure
+        2. Proper embedding with zero-padding
+        3. Careful handling of circular vs linear convolution
+        
+        This is NOT that. Use block_streaming_matmul instead.
         
         Args:
-            x: Input tensor (B, M, K) - spatial domain
-            w_freq: Weight frequencies (K, N) - ALREADY in frequency domain
+            x: Input tensor (B, M, K)
+            w_freq: Weight frequencies (K, N) or (D_out, D_in)
         
         Returns:
-            output: (B, M, N) - spatial domain result
-            
-        Memory: Only materializes output, not W!
+            output: (B, M, N) or (B, M, D_out)
         """
         B, M, K = x.shape
-        K2, N = w_freq.shape
-        assert K == K2, "Dimension mismatch"
         
-        # Pad to power of 2 for efficient FFT
-        pad_size = 2 ** int(np.ceil(np.log2(max(M, K, N))))
-        
-        # Transform input to frequency domain (batched)
-        x_padded = F.pad(x, (0, pad_size - K, 0, pad_size - M))
-        x_freq = torch.fft.fft2(x_padded)  # (B, pad_size, pad_size)
-        
-        # Pad weight frequencies
-        w_freq_padded = F.pad(w_freq, (0, pad_size - N, 0, pad_size - K))
-        
-        # Element-wise multiply in frequency domain (THE MAGIC!)
-        # This is O(n) instead of O(n³) for matmul
-        output_freq = x_freq * w_freq_padded.unsqueeze(0)
-        
-        # Inverse transform
-        output = torch.fft.ifft2(output_freq).real
-        
-        # Extract valid region (remove padding)
-        output = output[:, :M, :N]
-        
-        return output
+        # Detect weight format
+        if len(w_freq.shape) == 2:
+            # Could be (K, N) or (D_out, D_in)
+            D_out, D_in = w_freq.shape
+            
+            if D_in == K:
+                # Standard matmul format: (D_out, D_in)
+                w_spatial = torch.fft.ifft(w_freq, dim=-1).real
+                return torch.matmul(x, w_spatial.T)  # (B, M, D_out)
+            elif D_out == K:
+                # Old format: (K, N)
+                w_spatial = torch.fft.ifft(w_freq, dim=-1).real
+                return torch.matmul(x, w_spatial)  # (B, M, N)
+            else:
+                raise ValueError(f"Dimension mismatch: x has {K}, w_freq is {w_freq.shape}")
+        else:
+            raise ValueError(f"Unexpected w_freq shape: {w_freq.shape}")
     
     @staticmethod
     def block_streaming_matmul(x: torch.Tensor, 
@@ -168,17 +169,18 @@ class FrequencyAttention:
         # Complex conjugate multiply gives similarity in frequency space
         attention_freq = q_freq * torch.conj(k_freq)  # (B, H, N, D)
         
-        # Magnitude as attention score
-        attention_scores = torch.abs(attention_freq) / temperature
+        # Magnitude as attention score (per dimension)
+        attention_scores = torch.abs(attention_freq) / temperature  # (B, H, N, D)
+        
+        # Average across feature dimension to get per-token scores
+        attention_scores = attention_scores.mean(dim=-1)  # (B, H, N)
         
         # Softmax over sequence dimension
-        attention_probs = F.softmax(attention_scores, dim=2)
+        attention_probs = F.softmax(attention_scores, dim=-1)  # (B, H, N)
         
-        # Apply attention to values (in frequency domain!)
-        output_freq = attention_probs.unsqueeze(-1) * v_freq
-        
-        # Sum over sequence (in frequency domain)
-        output_freq = output_freq.sum(dim=2)
+        # Apply attention to values (broadcast properly)
+        attention_probs = attention_probs.unsqueeze(-1)  # (B, H, N, 1)
+        output_freq = attention_probs * v_freq  # (B, H, N, D)
         
         return output_freq
     

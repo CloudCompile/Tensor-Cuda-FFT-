@@ -20,7 +20,7 @@ Mathematical Foundation:
 import torch
 import torch.nn.functional as F
 import numpy as np
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 
 class ConvolutionTheoremMatMul:

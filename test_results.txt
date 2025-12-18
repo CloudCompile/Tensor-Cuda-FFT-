@@ -1,0 +1,74 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.8, pytest-9.0.1, pluggy-1.6.0 -- C:\Users\Aaron\AppData\Local\Programs\Python\Python312\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\Aaron\Desktop\FFT
+plugins: anyio-4.11.0, Faker-38.2.0, asyncio-1.3.0, cov-7.0.0, mock-3.15.1, respx-0.22.0, typeguard-4.4.4
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 46 items
+
+tests/integration/test_performance.py::TestPerformance::test_fft_performance FAILED [  2%]
+tests/integration/test_performance.py::TestPerformance::test_memory_efficiency FAILED [  4%]
+tests/integration/test_performance.py::TestPerformance::test_large_model_simulation PASSED [  6%]
+tests/integration/test_performance.py::TestPerformance::test_streaming_memory_usage PASSED [  8%]
+tests/integration/test_performance.py::TestCUDAIntegration::test_cuda_backend_available SKIPPED [ 10%]
+tests/integration/test_performance.py::TestCUDAIntegration::test_cuda_vs_pytorch_equivalence PASSED [ 13%]
+tests/integration/test_performance.py::TestScalability::test_incremental_sizes PASSED [ 15%]
+tests/integration/test_performance.py::TestScalability::test_3d_tensors PASSED [ 17%]
+tests/integration/test_performance.py::TestScalability::test_4d_tensors PASSED [ 19%]
+tests/test_frequency_ops.py::TestFrequencyMatMul::test_block_streaming_no_memory_spike PASSED [ 21%]
+tests/test_frequency_ops.py::TestFrequencyMatMul::test_circulant_matmul_correctness FAILED [ 23%]
+tests/test_frequency_ops.py::TestComplexSemanticEmbedding::test_semantic_similarity_in_frequency PASSED [ 26%]
+tests/test_frequency_ops.py::TestComplexSemanticEmbedding::test_phase_encodes_relationships PASSED [ 28%]
+tests/test_frequency_ops.py::TestComplexSemanticEmbedding::test_complex_richer_than_real PASSED [ 30%]
+tests/test_frequency_ops.py::TestFrequencyAttention::test_frequency_attention_shape PASSED [ 32%]
+tests/test_frequency_ops.py::TestFrequencyAttention::test_fnet_attention_fast PASSED [ 34%]
+tests/test_frequency_ops.py::TestFrequencyTransformer::test_transformer_layer_no_materialization PASSED [ 36%]
+tests/test_frequency_ops.py::TestFrequencyActivations::test_frequency_relu PASSED [ 39%]
+tests/test_frequency_ops.py::TestFrequencyActivations::test_frequency_layernorm PASSED [ 41%]
+tests/test_frequency_ops.py::TestMemoryEfficiency::test_memory_comparison PASSED [ 43%]
+tests/test_multidim_conv.py::TestFrequencyConv1D::test_conv1d_correctness FAILED [ 45%]
+tests/test_multidim_conv.py::TestFrequencyConv1D::test_conv1d_stride PASSED [ 47%]
+tests/test_multidim_conv.py::TestFrequencyConv2D::test_conv2d_correctness FAILED [ 50%]
+tests/test_multidim_conv.py::TestFrequencyConv2D::test_conv2d_different_strides FAILED [ 52%]
+tests/test_multidim_conv.py::TestFrequencyConv2D::test_conv2d_large_image FAILED [ 54%]
+tests/test_multidim_conv.py::TestFrequencyConv3D::test_conv3d_correctness FAILED [ 56%]
+tests/test_multidim_conv.py::TestFrequencyConv3D::test_conv3d_video FAILED [ 58%]
+tests/test_multidim_conv.py::TestBatchedOperations::test_batched_linear_correctness FAILED [ 60%]
+tests/test_multidim_conv.py::TestBatchedOperations::test_batched_memory_efficiency FAILED [ 63%]
+tests/test_multidim_conv.py::TestConvolutionTheoremProperties::test_linearity PASSED [ 65%]
+tests/test_multidim_conv.py::TestConvolutionTheoremProperties::test_commutativity PASSED [ 67%]
+tests/unit/test_tensor.py::TestSparseSpectralTensor::test_creation_from_spatial PASSED [ 69%]
+tests/unit/test_tensor.py::TestSparseSpectralTensor::test_to_spatial_reconstruction PASSED [ 71%]
+tests/unit/test_tensor.py::TestSparseSpectralTensor::test_addition PASSED [ 73%]
+tests/unit/test_tensor.py::TestSparseSpectralTensor::test_scalar_multiplication PASSED [ 76%]
+tests/unit/test_tensor.py::TestSparseSpectralTensor::test_matmul PASSED  [ 78%]
+tests/unit/test_tensor.py::TestSparseSpectralTensor::test_compression_ratio PASSED [ 80%]
+tests/unit/test_tensor.py::TestSparseSpectralTensor::test_memory_tracking PASSED [ 82%]
+tests/unit/test_tensor.py::TestSparseSpectralTensor::test_zeros_creation PASSED [ 84%]
+tests/unit/test_tensor.py::TestSparseSpectralTensor::test_randn_creation PASSED [ 86%]
+tests/unit/test_tensor.py::TestSparseSpectralTensor::test_different_sparsities PASSED [ 89%]
+tests/unit/test_tensor.py::TestSparseSpectralTensor::test_nd_tensors PASSED [ 91%]
+tests/unit/test_tensor.py::TestMemoryManager::test_set_limit PASSED      [ 93%]
+tests/unit/test_tensor.py::TestMemoryManager::test_clear_all PASSED      [ 95%]
+tests/unit/test_tensor.py::TestMemoryManager::test_get_stats PASSED      [ 97%]
+tests/unit/test_tensor.py::TestMemoryManager::test_memory_limit_enforcement PASSED [100%]
+
+============================== warnings summary ===============================
+fft_tensor\tensor.py:18
+  C:\Users\Aaron\Desktop\FFT\fft_tensor\tensor.py:18: UserWarning: CUDA extension not available. Using PyTorch fallback (slower).
+    warnings.warn("CUDA extension not available. Using PyTorch fallback (slower).")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/integration/test_performance.py::TestPerformance::test_fft_performance
+FAILED tests/integration/test_performance.py::TestPerformance::test_memory_efficiency
+FAILED tests/test_frequency_ops.py::TestFrequencyMatMul::test_circulant_matmul_correctness
+FAILED tests/test_multidim_conv.py::TestFrequencyConv1D::test_conv1d_correctness
+FAILED tests/test_multidim_conv.py::TestFrequencyConv2D::test_conv2d_correctness
+FAILED tests/test_multidim_conv.py::TestFrequencyConv2D::test_conv2d_different_strides
+FAILED tests/test_multidim_conv.py::TestFrequencyConv2D::test_conv2d_large_image
+FAILED tests/test_multidim_conv.py::TestFrequencyConv3D::test_conv3d_correctness
+FAILED tests/test_multidim_conv.py::TestFrequencyConv3D::test_conv3d_video - ...
+FAILED tests/test_multidim_conv.py::TestBatchedOperations::test_batched_linear_correctness
+FAILED tests/test_multidim_conv.py::TestBatchedOperations::test_batched_memory_efficiency
+============ 11 failed, 34 passed, 1 skipped, 1 warning in 15.40s =============
