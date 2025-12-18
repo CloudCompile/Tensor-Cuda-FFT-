@@ -1,0 +1,84 @@
+name: Test PyTorch Fallback Mode
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test-fallback:
+    name: Test without CUDA compilation
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install torch numpy pytest
+    
+    - name: Verify package structure
+      run: |
+        ls -la fft_tensor/
+        python test_syntax.py
+    
+    - name: Run unit tests
+      run: |
+        pytest tests/unit/test_tensor.py -v
+    
+    - name: Test imports
+      run: |
+        python -c "from fft_tensor import sst, MemoryManager; print('Import successful')"
+        python -c "import fft_tensor; print(f'Version: {fft_tensor.__version__}')"
+    
+    - name: Test basic functionality
+      run: |
+        python -c "
+        import torch
+        from fft_tensor import sst, MemoryManager
+        
+        # Create tensor
+        data = torch.randn(64, 64)
+        tensor = sst(data, sparsity=0.05, device='cpu')
+        
+        # Check compression
+        assert tensor.compress_ratio() > 1.0
+        print(f'Compression: {tensor.compress_ratio():.1f}x')
+        print(f'Memory: {tensor.memory_mb():.2f}MB')
+        
+        # Reconstruct
+        reconstructed = tensor.to_spatial()
+        assert reconstructed.shape == data.shape
+        
+        print('✓ All basic tests passed')
+        "
+    
+    - name: Memory management test
+      run: |
+        python -c "
+        import torch
+        from fft_tensor import sst, MemoryManager
+        
+        MemoryManager.set_limit(100)
+        
+        for i in range(10):
+            t = sst(torch.randn(32, 32), device='cpu')
+        
+        stats = MemoryManager.get_stats()
+        print(f'Memory stats: {stats}')
+        
+        MemoryManager.clear_all()
+        assert len(MemoryManager._tensors) == 0
+        
+        print('✓ Memory management working')
+        "

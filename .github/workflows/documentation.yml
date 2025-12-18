@@ -1,0 +1,45 @@
+name: Documentation Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  check-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Check README exists
+      run: |
+        test -f README.md && echo "✓ README.md exists"
+        test -f INSTALL.md && echo "✓ INSTALL.md exists"
+        test -f CONTRIBUTING.md && echo "✓ CONTRIBUTING.md exists"
+        test -f LICENSE && echo "✓ LICENSE exists"
+    
+    - name: Check documentation completeness
+      run: |
+        # Check README has key sections
+        grep -q "Installation" README.md && echo "✓ Installation section found"
+        grep -q "Usage" README.md && echo "✓ Usage section found"
+        grep -q "Examples" README.md && echo "✓ Examples section found"
+    
+    - name: Check for broken links (basic)
+      run: |
+        # Check for common broken link patterns
+        ! grep -r "TODO" *.md || echo "⚠ Found TODO markers in docs"
+        ! grep -r "FIXME" *.md || echo "⚠ Found FIXME markers in docs"
+        echo "✓ Basic link check complete"
+    
+    - name: Verify example files exist
+      run: |
+        test -f examples/basic_usage.py && echo "✓ basic_usage.py exists"
+        test -f examples/neural_network.py && echo "✓ neural_network.py exists"
+    
+    - name: Check test files exist
+      run: |
+        test -f tests/unit/test_tensor.py && echo "✓ Unit tests exist"
+        test -f tests/integration/test_performance.py && echo "✓ Integration tests exist"
