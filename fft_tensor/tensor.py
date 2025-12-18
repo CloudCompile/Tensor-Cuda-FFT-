@@ -66,14 +66,16 @@ class SparseSpectralTensor:
             dtype: Data type (float32 or float16 for memory savings)
             use_cuda_backend: Use CUDA kernels if available (recommended)
         """
+        # Auto-fallback to CPU if CUDA not available
+        if device == 'cuda' and not torch.cuda.is_available():
+            device = 'cpu'
+            import warnings
+            warnings.warn("CUDA not available, falling back to CPU")
+        
         self.device = device
         self.dtype = dtype
         self.sparsity = sparsity
         self.use_cuda = use_cuda_backend and CUDA_AVAILABLE and device == 'cuda'
-        
-        # Error checking
-        if device == 'cuda' and not torch.cuda.is_available():
-            raise RuntimeError("CUDA not available but device='cuda' specified")
         
         if data is not None:
             self._from_spatial(data)
