@@ -315,4 +315,12 @@ Next: Train on real data and measure end-to-end speedup
 
 
 if __name__ == '__main__':
-    compare_models()
+    try:
+        compare_models()
+    finally:
+        # Proper cleanup
+        import gc
+        gc.collect()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
